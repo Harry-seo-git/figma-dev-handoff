@@ -7,5 +7,12 @@
   "editorType": ["figma"],
   "networkAccess": {
     "allowedDomains": ["https://hooks.slack.com"]
-  }
+  },
+  "relaunchButtons": [
+    {
+      "command": "open",
+      "name": "Dev Handoff 상태 보기",
+      "multipleSelection": true
+    }
+  ]
 }

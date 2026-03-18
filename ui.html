@@ -3,30 +3,61 @@
 <head>
   <meta charset="UTF-8" />
   <style>
+    :root {
+      --blue: #18A0FB;
+      --blue-hover: #0d8de6;
+      --green: #22c55e;
+      --orange: #f59e0b;
+      --yellow: #eab308;
+      --purple: #a855f7;
+      --red: #ef4444;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --radius: 8px;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       font-size: 13px;
-      color: #333;
+      color: var(--gray-800);
       padding: 16px;
       background: #fff;
+      overflow-y: auto;
     }
-    h2 { font-size: 15px; margin-bottom: 12px; }
-    label { display: block; font-weight: 600; margin-bottom: 4px; margin-top: 12px; }
+
+    /* --- Typography --- */
+    h2 { font-size: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    label { display: block; font-weight: 600; margin-bottom: 4px; margin-top: 14px; font-size: 12px; color: var(--gray-600); }
+    .required::after { content: " *"; color: var(--red); }
+
+    /* --- Inputs --- */
     input, select, textarea {
       width: 100%;
       padding: 8px 10px;
-      border: 1px solid #ccc;
+      border: 1px solid var(--gray-300);
       border-radius: 6px;
       font-size: 13px;
       font-family: inherit;
+      color: var(--gray-800);
+      background: #fff;
+      transition: border-color 0.15s, box-shadow 0.15s;
     }
     input:focus, select:focus, textarea:focus {
       outline: none;
-      border-color: #18A0FB;
-      box-shadow: 0 0 0 2px rgba(24,160,251,0.15);
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(24,160,251,0.12);
     }
-    textarea { resize: vertical; min-height: 60px; }
+    input.error, select.error { border-color: var(--red); }
+    textarea { resize: vertical; min-height: 56px; }
+
+    /* --- Buttons --- */
     button {
       display: inline-flex;
       align-items: center;
@@ -34,146 +65,280 @@
       gap: 6px;
       padding: 10px 16px;
       border: none;
-      border-radius: 8px;
+      border-radius: var(--radius);
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       width: 100%;
-      margin-top: 12px;
-      transition: background 0.15s;
+      margin-top: 10px;
+      transition: all 0.15s;
     }
-    .btn-primary {
-      background: #18A0FB;
-      color: #fff;
-    }
-    .btn-primary:hover { background: #0d8de6; }
-    .btn-primary:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-    .btn-secondary {
-      background: #f0f0f0;
-      color: #333;
-    }
-    .btn-secondary:hover { background: #e0e0e0; }
+    .btn-primary { background: var(--blue); color: #fff; }
+    .btn-primary:hover { background: var(--blue-hover); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(24,160,251,0.3); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { background: var(--gray-300); cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-secondary { background: var(--gray-100); color: var(--gray-700); }
+    .btn-secondary:hover { background: var(--gray-200); }
+    .btn-small { width: auto; padding: 4px 10px; font-size: 11px; margin-top: 0; }
+    .btn-ghost { background: transparent; color: var(--gray-500); padding: 4px 8px; width: auto; margin-top: 0; font-size: 11px; }
+    .btn-ghost:hover { color: var(--blue); background: rgba(24,160,251,0.08); }
+    .btn-danger { background: transparent; color: var(--red); }
+    .btn-danger:hover { background: #fef2f2; }
 
+    /* --- Sections --- */
     .section {
-      background: #f7f8fa;
-      border-radius: 8px;
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
       padding: 12px;
       margin-bottom: 12px;
     }
-    .frame-list {
-      max-height: 120px;
-      overflow-y: auto;
-      margin-top: 8px;
-    }
+
+    /* --- Frame List --- */
+    .frame-list { max-height: 160px; overflow-y: auto; margin-top: 8px; }
     .frame-item {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 6px 8px;
+      padding: 8px 10px;
       background: #fff;
-      border: 1px solid #e8e8e8;
+      border: 1px solid var(--gray-200);
       border-radius: 6px;
       margin-bottom: 4px;
       font-size: 12px;
+      transition: border-color 0.15s;
     }
-    .frame-item .name { font-weight: 600; flex: 1; }
-    .frame-item .meta { color: #888; font-size: 11px; }
+    .frame-item:hover { border-color: var(--blue); }
+    .frame-icon { font-size: 14px; flex-shrink: 0; }
+    .frame-info { flex: 1; min-width: 0; }
+    .frame-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .frame-path { font-size: 10px; color: var(--gray-400); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .frame-meta { color: var(--gray-400); font-size: 10px; flex-shrink: 0; text-align: right; }
+    .frame-actions { display: flex; gap: 2px; flex-shrink: 0; }
 
-    .empty-state {
-      text-align: center;
-      padding: 24px 16px;
-      color: #999;
+    /* --- Status Badge --- */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600;
+      white-space: nowrap;
     }
-    .empty-state .icon { font-size: 32px; margin-bottom: 8px; }
+    .status-badge.dev-ready { background: #dcfce7; color: #166534; }
+    .status-badge.review-needed { background: #fef3c7; color: #92400e; }
+    .status-badge.in-progress { background: #dbeafe; color: #1e40af; }
+    .status-badge.updated { background: #f3e8ff; color: #6b21a8; }
 
+    /* --- Empty State --- */
+    .empty-state { text-align: center; padding: 28px 16px; color: var(--gray-400); }
+    .empty-state .icon { font-size: 36px; margin-bottom: 8px; opacity: 0.6; }
+    .empty-state .hint { font-size: 11px; margin-top: 4px; color: var(--gray-400); }
+
+    /* --- Settings --- */
     .settings-toggle {
+      display: flex;
+      align-items: center;
+      gap: 4px;
       font-size: 12px;
-      color: #888;
+      color: var(--gray-400);
       cursor: pointer;
-      text-align: right;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+      user-select: none;
     }
-    .settings-toggle:hover { color: #18A0FB; }
-
+    .settings-toggle:hover { color: var(--blue); }
     .settings-panel {
       display: none;
-      background: #fefce8;
-      border: 1px solid #fbbf24;
-      border-radius: 8px;
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      border-radius: var(--radius);
       padding: 12px;
       margin-bottom: 12px;
     }
     .settings-panel.open { display: block; }
+    .webhook-status { font-size: 11px; margin-top: 6px; }
+    .webhook-status.connected { color: var(--green); }
+    .webhook-status.disconnected { color: var(--red); }
 
-    .status-badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-size: 11px;
-      font-weight: 600;
-    }
-
-    .toast {
+    /* --- Confirmation Overlay --- */
+    .overlay {
       display: none;
       position: fixed;
-      bottom: 16px;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 200;
+      justify-content: center;
+      align-items: center;
+    }
+    .overlay.show { display: flex; }
+    .confirm-dialog {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      width: 90%;
+      max-width: 360px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .confirm-dialog h3 { font-size: 14px; margin-bottom: 8px; }
+    .confirm-dialog p { font-size: 12px; color: var(--gray-500); margin-bottom: 16px; line-height: 1.5; }
+    .confirm-dialog .actions { display: flex; gap: 8px; }
+    .confirm-dialog .actions button { flex: 1; }
+
+    /* --- History Modal --- */
+    .history-panel {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 200;
+      justify-content: center;
+      align-items: center;
+    }
+    .history-panel.show { display: flex; }
+    .history-content {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      width: 90%;
+      max-width: 400px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .history-item {
+      padding: 10px;
+      border-left: 3px solid var(--gray-200);
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+    .history-item .time { font-size: 10px; color: var(--gray-400); }
+
+    /* --- Toast --- */
+    .toast {
+      position: fixed;
+      bottom: -60px;
       left: 16px;
       right: 16px;
       padding: 10px 16px;
-      border-radius: 8px;
+      border-radius: var(--radius);
       font-size: 12px;
       font-weight: 600;
       text-align: center;
-      z-index: 100;
+      z-index: 300;
+      transition: bottom 0.3s ease;
     }
     .toast.success { background: #d1fae5; color: #065f46; }
     .toast.error { background: #fee2e2; color: #991b1b; }
-    .toast.show { display: block; }
+    .toast.warning { background: #fef3c7; color: #92400e; }
+    .toast.show { bottom: 16px; }
+
+    /* --- Summary bar --- */
+    .summary-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--gray-500);
+      margin-bottom: 8px;
+    }
+    .summary-bar strong { color: var(--gray-700); }
+
+    /* --- Divider --- */
+    .divider { border: none; border-top: 1px solid var(--gray-200); margin: 14px 0; }
+
+    /* --- Sending animation --- */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .sending { animation: pulse 1.2s infinite; }
   </style>
 </head>
 <body>
 
   <!-- Settings Panel -->
-  <div class="settings-toggle" onclick="toggleSettings()">&#9881; Slack Webhook 설정</div>
+  <div class="settings-toggle" onclick="toggleSettings()">
+    <span>&#9881;</span>
+    <span>Slack Webhook 설정</span>
+    <span id="webhookIndicator" style="width:6px;height:6px;border-radius:50%;margin-left:4px;"></span>
+  </div>
   <div id="settingsPanel" class="settings-panel">
-    <label for="webhookUrl">Slack Webhook URL</label>
-    <input type="url" id="webhookUrl" placeholder="https://hooks.slack.com/services/T.../B.../..." />
+    <label for="webhookUrl">Webhook URL</label>
+    <input type="url" id="webhookUrl" placeholder="https://hooks.slack.com/services/T.../B.../..." oninput="validateWebhookInput()" />
+    <div id="webhookValidation" style="font-size:11px;margin-top:4px;"></div>
     <button class="btn-secondary" onclick="saveWebhook()" style="margin-top: 8px;">저장</button>
+    <div id="webhookStatus" class="webhook-status"></div>
   </div>
 
   <!-- Frame Selection -->
   <div class="section">
-    <h2>&#127912; 선택된 프레임</h2>
+    <h2>선택된 프레임</h2>
     <div id="frameContainer">
       <div class="empty-state">
         <div class="icon">&#128433;</div>
         <div>핸드오프할 프레임을 선택하세요</div>
+        <div class="hint">Frame, Component, Section, Group 타입만 지원됩니다</div>
       </div>
     </div>
   </div>
 
   <!-- Handoff Form -->
   <div id="formSection">
-    <label for="designer">&#128100; 담당 디자이너</label>
-    <input type="text" id="designer" placeholder="이름을 입력하세요" />
+    <label for="designer" class="required">담당 디자이너</label>
+    <input type="text" id="designer" placeholder="이름을 입력하세요" oninput="saveDesignerName()" />
 
-    <label for="status">&#128204; 상태</label>
-    <select id="status">
+    <label for="status" class="required">상태</label>
+    <select id="status" onchange="updateStatusPreview()">
       <option value="dev-ready">&#128994; Dev Ready — 개발 착수 가능</option>
       <option value="review-needed">&#128992; Review Needed — 리뷰 필요</option>
       <option value="in-progress">&#128993; In Progress — 작업 중</option>
       <option value="updated">&#128309; Updated — 업데이트됨</option>
     </select>
+    <div id="statusPreview" style="margin-top:6px;"></div>
 
-    <label for="memo">&#128221; 메모 (선택)</label>
-    <textarea id="memo" placeholder="개발팀에 전달할 메모를 입력하세요"></textarea>
+    <label for="priority">우선순위</label>
+    <select id="priority">
+      <option value="normal">보통</option>
+      <option value="high">&#128308; 높음 — 빠른 확인 필요</option>
+      <option value="urgent">&#128680; 긴급 — 즉시 확인 필요</option>
+    </select>
 
-    <button id="sendBtn" class="btn-primary" onclick="sendToSlack()" disabled>
+    <label for="memo">메모 (선택)</label>
+    <textarea id="memo" placeholder="개발팀에 전달할 메모를 입력하세요&#10;예: 반응형 breakpoint는 Figma 코멘트 참고"></textarea>
+
+    <hr class="divider" />
+
+    <button id="sendBtn" class="btn-primary" onclick="confirmSend()" disabled>
       &#128232; Slack에 알림 보내기
     </button>
+    <div style="text-align:center;margin-top:6px;">
+      <span style="font-size:10px;color:var(--gray-400);">Ctrl+Enter로 빠르게 전송</span>
+    </div>
+  </div>
+
+  <!-- Confirmation Dialog -->
+  <div id="confirmOverlay" class="overlay">
+    <div class="confirm-dialog">
+      <h3>&#128232; 알림을 보내시겠습니까?</h3>
+      <div id="confirmSummary" style="font-size:12px;color:var(--gray-500);margin-bottom:16px;line-height:1.6;"></div>
+      <div class="actions">
+        <button class="btn-secondary btn-small" onclick="closeConfirm()" style="width:auto;flex:1;">취소</button>
+        <button class="btn-primary btn-small" onclick="sendToSlack()" style="width:auto;flex:1;" id="confirmSendBtn">보내기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History Modal -->
+  <div id="historyPanel" class="history-panel" onclick="closeHistory(event)">
+    <div class="history-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h3 id="historyTitle" style="font-size:14px;">핸드오프 히스토리</h3>
+        <button class="btn-ghost" onclick="closeHistoryDirect()">&#10005; 닫기</button>
+      </div>
+      <div id="historyList"></div>
+    </div>
   </div>
 
   <!-- Toast -->
@@ -183,16 +348,51 @@
     let selectedFrames = [];
     let currentPageName = "";
 
-    // --- Settings ---
+    const STATUS_MAP = {
+      "dev-ready":      { emoji: "&#128994;", label: "Dev Ready",      slackEmoji: ":large_green_circle:", color: "#22c55e" },
+      "review-needed":  { emoji: "&#128992;", label: "Review Needed",  slackEmoji: ":large_orange_circle:", color: "#f59e0b" },
+      "in-progress":    { emoji: "&#128993;", label: "In Progress",    slackEmoji: ":large_yellow_circle:", color: "#eab308" },
+      "updated":        { emoji: "&#128309;", label: "Updated",        slackEmoji: ":large_purple_circle:", color: "#a855f7" }
+    };
+
+    const PRIORITY_MAP = {
+      "normal":  { emoji: "", label: "" },
+      "high":    { emoji: "&#128308;", label: "높음", slack: ":red_circle: *높음*" },
+      "urgent":  { emoji: "&#128680;", label: "긴급", slack: ":rotating_light: *긴급 — 즉시 확인 필요*" }
+    };
+
+    // ==================== Settings ====================
     function toggleSettings() {
       document.getElementById("settingsPanel").classList.toggle("open");
     }
 
+    function validateWebhookInput() {
+      const url = document.getElementById("webhookUrl").value.trim();
+      const validation = document.getElementById("webhookValidation");
+      if (!url) {
+        validation.innerHTML = "";
+        return;
+      }
+      if (!url.startsWith("https://hooks.slack.com/")) {
+        validation.innerHTML = '<span style="color:var(--red);">hooks.slack.com 으로 시작하는 URL만 허용됩니다</span>';
+      } else {
+        validation.innerHTML = '<span style="color:var(--green);">&#10003; 유효한 형식입니다</span>';
+      }
+    }
+
     function saveWebhook() {
       const url = document.getElementById("webhookUrl").value.trim();
-      if (!url) return;
+      if (!url) {
+        showToast("URL을 입력해주세요.", "error");
+        return;
+      }
+      if (!url.startsWith("https://hooks.slack.com/")) {
+        showToast("올바른 Slack Webhook URL을 입력해주세요.", "error");
+        return;
+      }
       localStorage.setItem("slack_webhook_url", url);
       showToast("Webhook URL이 저장되었습니다.", "success");
+      updateWebhookIndicator();
       toggleSettings();
     }
 
@@ -200,13 +400,52 @@
       return localStorage.getItem("slack_webhook_url") || "";
     }
 
-    // 저장된 Webhook 복원
-    const savedUrl = getWebhookUrl();
-    if (savedUrl) {
-      document.getElementById("webhookUrl").value = savedUrl;
+    function updateWebhookIndicator() {
+      const indicator = document.getElementById("webhookIndicator");
+      const url = getWebhookUrl();
+      if (url) {
+        indicator.style.background = "var(--green)";
+        indicator.title = "Webhook 연결됨";
+      } else {
+        indicator.style.background = "var(--red)";
+        indicator.title = "Webhook 미설정";
+      }
     }
 
-    // --- Frame Rendering ---
+    // 저장된 값 복원
+    const savedUrl = getWebhookUrl();
+    if (savedUrl) document.getElementById("webhookUrl").value = savedUrl;
+    updateWebhookIndicator();
+
+    // 디자이너 이름 기억
+    const savedDesigner = localStorage.getItem("designer_name") || "";
+    if (savedDesigner) document.getElementById("designer").value = savedDesigner;
+
+    function saveDesignerName() {
+      localStorage.setItem("designer_name", document.getElementById("designer").value.trim());
+    }
+
+    // ==================== Status Preview ====================
+    function updateStatusPreview() {
+      const status = document.getElementById("status").value;
+      const info = STATUS_MAP[status];
+      document.getElementById("statusPreview").innerHTML =
+        `<span class="status-badge ${status}">${info.emoji} ${info.label}</span>`;
+    }
+    updateStatusPreview();
+
+    // ==================== Frame Rendering ====================
+    function getFrameTypeIcon(type) {
+      switch (type) {
+        case "FRAME": return "&#9634;";
+        case "COMPONENT": return "&#9670;";
+        case "COMPONENT_SET": return "&#9670;&#9670;";
+        case "SECTION": return "&#9638;";
+        case "GROUP": return "&#9744;";
+        default: return "&#9633;";
+      }
+    }
+
     function renderFrames(frames) {
       const container = document.getElementById("frameContainer");
       const sendBtn = document.getElementById("sendBtn");
@@ -216,20 +455,36 @@
           <div class="empty-state">
             <div class="icon">&#128433;</div>
             <div>핸드오프할 프레임을 선택하세요</div>
+            <div class="hint">Frame, Component, Section, Group 타입만 지원됩니다</div>
           </div>`;
         sendBtn.disabled = true;
         return;
       }
 
-      let html = `<div style="font-size:12px;color:#666;margin-bottom:6px;">
-        &#128196; 페이지: <strong>${escapeHtml(currentPageName)}</strong> &middot; ${frames.length}개 프레임
+      let html = `<div class="summary-bar">
+        &#128196; <strong>${escapeHtml(currentPageName)}</strong> &middot; ${frames.length}개 프레임
       </div><div class="frame-list">`;
 
       frames.forEach(f => {
+        const statusBadge = f.prevStatus
+          ? `<span class="status-badge ${f.prevStatus}" style="font-size:9px;padding:1px 6px;">${STATUS_MAP[f.prevStatus]?.label || f.prevStatus}</span>`
+          : "";
+        const pathLine = f.parentPath
+          ? `<div class="frame-path">${escapeHtml(f.parentPath)}</div>`
+          : "";
+
         html += `
           <div class="frame-item">
-            <span class="name">${escapeHtml(f.name)}</span>
-            <span class="meta">${f.type} &middot; ${f.width}&times;${f.height}</span>
+            <span class="frame-icon">${getFrameTypeIcon(f.type)}</span>
+            <div class="frame-info">
+              <div class="frame-name">${escapeHtml(f.name)} ${statusBadge}</div>
+              ${pathLine}
+            </div>
+            <div class="frame-meta">${f.width}&times;${f.height}</div>
+            <div class="frame-actions">
+              ${f.prevStatus ? `<button class="btn-ghost" onclick="showHistory('${f.id}')" title="히스토리">&#128337;</button>` : ""}
+              ${f.prevStatus ? `<button class="btn-ghost btn-danger" onclick="clearStatus('${f.id}')" title="상태 초기화">&#10005;</button>` : ""}
+            </div>
           </div>`;
       });
 
@@ -238,36 +493,68 @@
       sendBtn.disabled = false;
     }
 
-    // --- Slack Send ---
-    async function sendToSlack() {
+    // ==================== Confirmation ====================
+    function confirmSend() {
       const webhookUrl = getWebhookUrl();
       if (!webhookUrl) {
-        showToast("먼저 Slack Webhook URL을 설정해주세요.", "error");
+        showToast("먼저 Slack Webhook URL을 설정해주세요.", "warning");
         toggleSettings();
         return;
       }
-
+      const designer = document.getElementById("designer").value.trim();
+      if (!designer) {
+        document.getElementById("designer").classList.add("error");
+        showToast("담당 디자이너를 입력해주세요.", "error");
+        document.getElementById("designer").focus();
+        setTimeout(() => document.getElementById("designer").classList.remove("error"), 2000);
+        return;
+      }
       if (selectedFrames.length === 0) {
         showToast("프레임을 선택해주세요.", "error");
         return;
       }
 
-      const designer = document.getElementById("designer").value.trim() || "미지정";
+      const status = document.getElementById("status");
+      const statusText = status.options[status.selectedIndex].text;
+      const priority = document.getElementById("priority");
+      const priorityText = priority.value !== "normal" ? priority.options[priority.selectedIndex].text : "";
+
+      const summary = document.getElementById("confirmSummary");
+      summary.innerHTML = `
+        <strong>${escapeHtml(designer)}</strong>님이 <strong>${selectedFrames.length}개</strong> 프레임을<br>
+        <span class="status-badge ${status.value}">${statusText}</span> 상태로 알림 전송합니다.
+        ${priorityText ? `<br>우선순위: <strong>${priorityText}</strong>` : ""}
+        <br><br>
+        <span style="font-size:11px;color:var(--gray-400);">프레임: ${selectedFrames.map(f => f.name).join(", ")}</span>
+      `;
+
+      document.getElementById("confirmOverlay").classList.add("show");
+    }
+
+    function closeConfirm() {
+      document.getElementById("confirmOverlay").classList.remove("show");
+    }
+
+    // ==================== Slack Send ====================
+    async function sendToSlack() {
+      closeConfirm();
+
+      const webhookUrl = getWebhookUrl();
+      const designer = document.getElementById("designer").value.trim();
       const status = document.getElementById("status");
       const statusText = status.options[status.selectedIndex].text;
       const statusValue = status.value;
+      const priority = document.getElementById("priority").value;
       const memo = document.getElementById("memo").value.trim();
 
       const sendBtn = document.getElementById("sendBtn");
       sendBtn.disabled = true;
-      sendBtn.textContent = "전송 중...";
+      sendBtn.innerHTML = '<span class="sending">&#128232; 전송 중...</span>';
 
       // 프레임 목록 텍스트
       const frameLines = selectedFrames.map(f => {
-        const link = f.figmaLink
-          ? ` — <${f.figmaLink}|Figma에서 열기>`
-          : "";
-        return `• ${f.name} (${f.type}, ${f.width}×${f.height})${link}`;
+        const link = f.figmaLink ? ` — <${f.figmaLink}|Figma에서 열기>` : "";
+        return `• *${f.name}* (${f.type}, ${f.width}×${f.height})${link}`;
       }).join("\n");
 
       const now = new Date();
@@ -277,44 +564,51 @@
       });
 
       // Slack Block Kit 메시지
-      const payload = {
-        blocks: [
-          {
-            type: "header",
-            text: { type: "plain_text", text: "🚀 Dev Handoff 알림", emoji: true }
-          },
-          { type: "divider" },
-          {
-            type: "section",
-            fields: [
-              { type: "mrkdwn", text: `*상태:*\n${statusText}` },
-              { type: "mrkdwn", text: `*담당:*\n${designer}` },
-              { type: "mrkdwn", text: `*페이지:*\n${currentPageName}` },
-              { type: "mrkdwn", text: `*프레임:*\n${selectedFrames.length}개` }
-            ]
-          },
-          {
-            type: "section",
-            text: { type: "mrkdwn", text: `*프레임 목록:*\n${frameLines}` }
-          }
-        ]
-      };
+      const blocks = [
+        {
+          type: "header",
+          text: { type: "plain_text", text: "🚀 Dev Handoff 알림", emoji: true }
+        },
+        { type: "divider" },
+        {
+          type: "section",
+          fields: [
+            { type: "mrkdwn", text: `*상태:*\n${statusText}` },
+            { type: "mrkdwn", text: `*담당:*\n${designer}` },
+            { type: "mrkdwn", text: `*페이지:*\n${currentPageName}` },
+            { type: "mrkdwn", text: `*프레임:*\n${selectedFrames.length}개` }
+          ]
+        }
+      ];
 
-      // 메모가 있으면 추가
+      // 우선순위가 높으면 추가
+      if (priority !== "normal") {
+        blocks.push({
+          type: "section",
+          text: { type: "mrkdwn", text: `*우선순위:* ${PRIORITY_MAP[priority].slack}` }
+        });
+      }
+
+      blocks.push({
+        type: "section",
+        text: { type: "mrkdwn", text: `*프레임 목록:*\n${frameLines}` }
+      });
+
       if (memo) {
-        payload.blocks.push({
+        blocks.push({
           type: "section",
           text: { type: "mrkdwn", text: `*📝 메모:*\n${memo}` }
         });
       }
 
-      // 타임스탬프
-      payload.blocks.push({
+      blocks.push({
         type: "context",
         elements: [
           { type: "mrkdwn", text: `🕐 ${timestamp} · Dev Handoff Notifier` }
         ]
       });
+
+      const payload = { blocks: blocks };
 
       try {
         const response = await fetch(webhookUrl, {
@@ -324,7 +618,6 @@
         });
 
         if (response.ok) {
-          // 플러그인에 Dev Ready 마킹 요청
           parent.postMessage({
             pluginMessage: {
               type: "mark-dev-ready",
@@ -336,8 +629,12 @@
 
           parent.postMessage({ pluginMessage: { type: "slack-sent" } }, "*");
           showToast("Slack 알림이 전송되었습니다!", "success");
+
+          // 메모 초기화 (디자이너 이름은 유지)
+          document.getElementById("memo").value = "";
         } else {
-          throw new Error(`HTTP ${response.status}`);
+          const errText = await response.text().catch(() => "");
+          throw new Error(`HTTP ${response.status}${errText ? " — " + errText : ""}`);
         }
       } catch (err) {
         parent.postMessage({
@@ -350,7 +647,51 @@
       }
     }
 
-    // --- Figma → UI 메시지 수신 ---
+    // ==================== History ====================
+    function showHistory(nodeId) {
+      parent.postMessage({ pluginMessage: { type: "get-history", nodeId: nodeId } }, "*");
+    }
+
+    function renderHistory(nodeName, history) {
+      document.getElementById("historyTitle").textContent = `${nodeName} — 히스토리`;
+      const list = document.getElementById("historyList");
+
+      if (!history || history.length === 0) {
+        list.innerHTML = '<div style="text-align:center;color:var(--gray-400);padding:20px;">히스토리가 없습니다.</div>';
+      } else {
+        list.innerHTML = history.map(h => {
+          const statusInfo = STATUS_MAP[h.status] || { label: h.status };
+          const date = new Date(h.timestamp).toLocaleString("ko-KR", {
+            month: "short", day: "numeric", hour: "numeric", minute: "2-digit", hour12: true
+          });
+          return `
+            <div class="history-item" style="border-left-color: ${statusInfo.color || 'var(--gray-300)'};">
+              <div><span class="status-badge ${h.status}">${statusInfo.label}</span> &middot; ${escapeHtml(h.designer)}</div>
+              ${h.memo ? `<div style="margin-top:4px;color:var(--gray-500);">${escapeHtml(h.memo)}</div>` : ""}
+              <div class="time">${date}</div>
+            </div>`;
+        }).join("");
+      }
+
+      document.getElementById("historyPanel").classList.add("show");
+    }
+
+    function closeHistory(e) {
+      if (e.target === document.getElementById("historyPanel")) {
+        document.getElementById("historyPanel").classList.remove("show");
+      }
+    }
+
+    function closeHistoryDirect() {
+      document.getElementById("historyPanel").classList.remove("show");
+    }
+
+    // ==================== Clear Status ====================
+    function clearStatus(nodeId) {
+      parent.postMessage({ pluginMessage: { type: "clear-status", nodeId: nodeId } }, "*");
+    }
+
+    // ==================== Figma Messages ====================
     window.onmessage = (event) => {
       const msg = event.data.pluginMessage;
       if (!msg) return;
@@ -359,10 +700,33 @@
         selectedFrames = msg.frames;
         currentPageName = msg.pageName;
         renderFrames(msg.frames);
+
+        if (msg.skippedCount > 0) {
+          showToast(`${msg.skippedCount}개 노드는 지원하지 않는 타입입니다.`, "warning");
+        }
+      }
+
+      if (msg.type === "history-data") {
+        renderHistory(msg.nodeName, msg.history);
       }
     };
 
-    // --- Helpers ---
+    // ==================== Keyboard Shortcut ====================
+    document.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        const sendBtn = document.getElementById("sendBtn");
+        if (!sendBtn.disabled) {
+          confirmSend();
+        }
+      }
+      if (e.key === "Escape") {
+        closeConfirm();
+        closeHistoryDirect();
+      }
+    });
+
+    // ==================== Helpers ====================
     function escapeHtml(str) {
       const div = document.createElement("div");
       div.textContent = str;
@@ -372,8 +736,12 @@
     function showToast(message, type) {
       const toast = document.getElementById("toast");
       toast.textContent = message;
-      toast.className = "toast " + type + " show";
-      setTimeout(() => { toast.className = "toast"; }, 3000);
+      toast.className = "toast " + type;
+      // 트리거 reflow 후 show
+      requestAnimationFrame(() => {
+        toast.classList.add("show");
+        setTimeout(() => { toast.classList.remove("show"); }, 3000);
+      });
     }
   </script>
 </body>
