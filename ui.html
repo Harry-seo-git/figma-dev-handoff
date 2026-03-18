@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 13px;
+      color: #333;
+      padding: 16px;
+      background: #fff;
+    }
+    h2 { font-size: 15px; margin-bottom: 12px; }
+    label { display: block; font-weight: 600; margin-bottom: 4px; margin-top: 12px; }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #18A0FB;
+      box-shadow: 0 0 0 2px rgba(24,160,251,0.15);
+    }
+    textarea { resize: vertical; min-height: 60px; }
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 12px;
+      transition: background 0.15s;
+    }
+    .btn-primary {
+      background: #18A0FB;
+      color: #fff;
+    }
+    .btn-primary:hover { background: #0d8de6; }
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+    .btn-secondary:hover { background: #e0e0e0; }
+
+    .section {
+      background: #f7f8fa;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .frame-list {
+      max-height: 120px;
+      overflow-y: auto;
+      margin-top: 8px;
+    }
+    .frame-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      background: #fff;
+      border: 1px solid #e8e8e8;
+      border-radius: 6px;
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+    .frame-item .name { font-weight: 600; flex: 1; }
+    .frame-item .meta { color: #888; font-size: 11px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 24px 16px;
+      color: #999;
+    }
+    .empty-state .icon { font-size: 32px; margin-bottom: 8px; }
+
+    .settings-toggle {
+      font-size: 12px;
+      color: #888;
+      cursor: pointer;
+      text-align: right;
+      margin-bottom: 8px;
+    }
+    .settings-toggle:hover { color: #18A0FB; }
+
+    .settings-panel {
+      display: none;
+      background: #fefce8;
+      border: 1px solid #fbbf24;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .settings-panel.open { display: block; }
+
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .toast {
+      display: none;
+      position: fixed;
+      bottom: 16px;
+      left: 16px;
+      right: 16px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
+      z-index: 100;
+    }
+    .toast.success { background: #d1fae5; color: #065f46; }
+    .toast.error { background: #fee2e2; color: #991b1b; }
+    .toast.show { display: block; }
+  </style>
+</head>
+<body>
+
+  <!-- Settings Panel -->
+  <div class="settings-toggle" onclick="toggleSettings()">&#9881; Slack Webhook 설정</div>
+  <div id="settingsPanel" class="settings-panel">
+    <label for="webhookUrl">Slack Webhook URL</label>
+    <input type="url" id="webhookUrl" placeholder="https://hooks.slack.com/services/T.../B.../..." />
+    <button class="btn-secondary" onclick="saveWebhook()" style="margin-top: 8px;">저장</button>
+  </div>
+
+  <!-- Frame Selection -->
+  <div class="section">
+    <h2>&#127912; 선택된 프레임</h2>
+    <div id="frameContainer">
+      <div class="empty-state">
+        <div class="icon">&#128433;</div>
+        <div>핸드오프할 프레임을 선택하세요</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Handoff Form -->
+  <div id="formSection">
+    <label for="designer">&#128100; 담당 디자이너</label>
+    <input type="text" id="designer" placeholder="이름을 입력하세요" />
+
+    <label for="status">&#128204; 상태</label>
+    <select id="status">
+      <option value="dev-ready">&#128994; Dev Ready — 개발 착수 가능</option>
+      <option value="review-needed">&#128992; Review Needed — 리뷰 필요</option>
+      <option value="in-progress">&#128993; In Progress — 작업 중</option>
+      <option value="updated">&#128309; Updated — 업데이트됨</option>
+    </select>
+
+    <label for="memo">&#128221; 메모 (선택)</label>
+    <textarea id="memo" placeholder="개발팀에 전달할 메모를 입력하세요"></textarea>
+
+    <button id="sendBtn" class="btn-primary" onclick="sendToSlack()" disabled>
+      &#128232; Slack에 알림 보내기
+    </button>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    let selectedFrames = [];
+    let currentPageName = "";
+
+    // --- Settings ---
+    function toggleSettings() {
+      document.getElementById("settingsPanel").classList.toggle("open");
+    }
+
+    function saveWebhook() {
+      const url = document.getElementById("webhookUrl").value.trim();
+      if (!url) return;
+      localStorage.setItem("slack_webhook_url", url);
+      showToast("Webhook URL이 저장되었습니다.", "success");
+      toggleSettings();
+    }
+
+    function getWebhookUrl() {
+      return localStorage.getItem("slack_webhook_url") || "";
+    }
+
+    // 저장된 Webhook 복원
+    const savedUrl = getWebhookUrl();
+    if (savedUrl) {
+      document.getElementById("webhookUrl").value = savedUrl;
+    }
+
+    // --- Frame Rendering ---
+    function renderFrames(frames) {
+      const container = document.getElementById("frameContainer");
+      const sendBtn = document.getElementById("sendBtn");
+
+      if (!frames || frames.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">&#128433;</div>
+            <div>핸드오프할 프레임을 선택하세요</div>
+          </div>`;
+        sendBtn.disabled = true;
+        return;
+      }
+
+      let html = `<div style="font-size:12px;color:#666;margin-bottom:6px;">
+        &#128196; 페이지: <strong>${escapeHtml(currentPageName)}</strong> &middot; ${frames.length}개 프레임
+      </div><div class="frame-list">`;
+
+      frames.forEach(f => {
+        html += `
+          <div class="frame-item">
+            <span class="name">${escapeHtml(f.name)}</span>
+            <span class="meta">${f.type} &middot; ${f.width}&times;${f.height}</span>
+          </div>`;
+      });
+
+      html += "</div>";
+      container.innerHTML = html;
+      sendBtn.disabled = false;
+    }
+
+    // --- Slack Send ---
+    async function sendToSlack() {
+      const webhookUrl = getWebhookUrl();
+      if (!webhookUrl) {
+        showToast("먼저 Slack Webhook URL을 설정해주세요.", "error");
+        toggleSettings();
+        return;
+      }
+
+      if (selectedFrames.length === 0) {
+        showToast("프레임을 선택해주세요.", "error");
+        return;
+      }
+
+      const designer = document.getElementById("designer").value.trim() || "미지정";
+      const status = document.getElementById("status");
+      const statusText = status.options[status.selectedIndex].text;
+      const statusValue = status.value;
+      const memo = document.getElementById("memo").value.trim();
+
+      const sendBtn = document.getElementById("sendBtn");
+      sendBtn.disabled = true;
+      sendBtn.textContent = "전송 중...";
+
+      // 프레임 목록 텍스트
+      const frameLines = selectedFrames.map(f => {
+        const link = f.figmaLink
+          ? ` — <${f.figmaLink}|Figma에서 열기>`
+          : "";
+        return `• ${f.name} (${f.type}, ${f.width}×${f.height})${link}`;
+      }).join("\n");
+
+      const now = new Date();
+      const timestamp = now.toLocaleString("ko-KR", {
+        year: "numeric", month: "long", day: "numeric",
+        hour: "numeric", minute: "2-digit", hour12: true
+      });
+
+      // Slack Block Kit 메시지
+      const payload = {
+        blocks: [
+          {
+            type: "header",
+            text: { type: "plain_text", text: "🚀 Dev Handoff 알림", emoji: true }
+          },
+          { type: "divider" },
+          {
+            type: "section",
+            fields: [
+              { type: "mrkdwn", text: `*상태:*\n${statusText}` },
+              { type: "mrkdwn", text: `*담당:*\n${designer}` },
+              { type: "mrkdwn", text: `*페이지:*\n${currentPageName}` },
+              { type: "mrkdwn", text: `*프레임:*\n${selectedFrames.length}개` }
+            ]
+          },
+          {
+            type: "section",
+            text: { type: "mrkdwn", text: `*프레임 목록:*\n${frameLines}` }
+          }
+        ]
+      };
+
+      // 메모가 있으면 추가
+      if (memo) {
+        payload.blocks.push({
+          type: "section",
+          text: { type: "mrkdwn", text: `*📝 메모:*\n${memo}` }
+        });
+      }
+
+      // 타임스탬프
+      payload.blocks.push({
+        type: "context",
+        elements: [
+          { type: "mrkdwn", text: `🕐 ${timestamp} · Dev Handoff Notifier` }
+        ]
+      });
+
+      try {
+        const response = await fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          // 플러그인에 Dev Ready 마킹 요청
+          parent.postMessage({
+            pluginMessage: {
+              type: "mark-dev-ready",
+              status: statusValue,
+              designer: designer,
+              memo: memo
+            }
+          }, "*");
+
+          parent.postMessage({ pluginMessage: { type: "slack-sent" } }, "*");
+          showToast("Slack 알림이 전송되었습니다!", "success");
+        } else {
+          throw new Error(`HTTP ${response.status}`);
+        }
+      } catch (err) {
+        parent.postMessage({
+          pluginMessage: { type: "slack-error", error: err.message }
+        }, "*");
+        showToast("전송 실패: " + err.message, "error");
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = "&#128232; Slack에 알림 보내기";
+      }
+    }
+
+    // --- Figma → UI 메시지 수신 ---
+    window.onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+      if (!msg) return;
+
+      if (msg.type === "selection-update") {
+        selectedFrames = msg.frames;
+        currentPageName = msg.pageName;
+        renderFrames(msg.frames);
+      }
+    };
+
+    // --- Helpers ---
+    function escapeHtml(str) {
+      const div = document.createElement("div");
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function showToast(message, type) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.className = "toast " + type + " show";
+      setTimeout(() => { toast.className = "toast"; }, 3000);
+    }
+  </script>
+</body>
+</html>
