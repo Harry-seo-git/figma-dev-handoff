@@ -1,0 +1,21 @@
+{
+  "name": "Dev Handoff Notifier",
+  "id": "dev-handoff-notifier",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "networkAccess": {
+    "allowedDomains": [
+      "https://hooks.slack.com",
+      "https://slack.com"
+    ]
+  },
+  "relaunchButtons": [
+    {
+      "command": "open",
+      "name": "Dev Handoff 상태 보기",
+      "multipleSelection": true
+    }
+  ]
+}
