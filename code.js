@@ -1,7 +1,7 @@
 // Dev Handoff Notifier — Figma Plugin (Sandbox)
 // 이 파일은 Figma 샌드박스에서 실행됩니다.
 
-figma.showUI(__html__, { width: 500, height: 680 });
+figma.showUI(__html__, { width: 520, height: 720 });
 
 // 핸드오프 대상 노드 타입
 const HANDOFF_TYPES = ["FRAME", "COMPONENT", "COMPONENT_SET", "SECTION", "GROUP"];
@@ -15,12 +15,18 @@ function sendSelectionToUI() {
   const frames = selection
     .filter(node => HANDOFF_TYPES.includes(node.type))
     .map(node => {
-      // 기존 pluginData 읽기
       const existingStatus = node.getPluginData("devHandoffStatus") || null;
       const existingDesigner = node.getPluginData("devHandoffDesigner") || null;
       const existingTimestamp = node.getPluginData("devHandoffTimestamp") || null;
 
-      // 부모 프레임 경로 구하기 (최상위까지)
+      // Thread ts 정보 (채널별)
+      let threadMap = {};
+      try {
+        const raw = node.getPluginData("devHandoffThreads");
+        if (raw) threadMap = JSON.parse(raw);
+      } catch (e) {}
+
+      // 부모 프레임 경로
       const path = [];
       let parent = node.parent;
       while (parent && parent.type !== "PAGE") {
@@ -39,14 +45,13 @@ function sendSelectionToUI() {
         figmaLink: fileKey
           ? `https://www.figma.com/file/${fileKey}?node-id=${encodeURIComponent(node.id)}`
           : null,
-        // 기존 핸드오프 상태
         prevStatus: existingStatus,
         prevDesigner: existingDesigner,
-        prevTimestamp: existingTimestamp
+        prevTimestamp: existingTimestamp,
+        threadMap: threadMap
       };
     });
 
-  // 핸드오프 대상이 아닌 노드 수
   const skippedCount = selection.length - frames.length;
 
   figma.ui.postMessage({
@@ -60,12 +65,10 @@ function sendSelectionToUI() {
 // 초기 선택 정보 전달
 sendSelectionToUI();
 
-// 선택 변경 이벤트 리스너
 figma.on("selectionchange", () => {
   sendSelectionToUI();
 });
 
-// relaunch 버튼으로 열린 경우
 if (figma.command === "open") {
   sendSelectionToUI();
 }
@@ -82,7 +85,7 @@ figma.ui.onmessage = (msg) => {
       node.setPluginData("devHandoffTimestamp", new Date().toISOString());
       node.setPluginData("devHandoffMemo", msg.memo || "");
 
-      // 핸드오프 히스토리 추가 (최근 10건)
+      // 히스토리 (최근 10건)
       const historyRaw = node.getPluginData("devHandoffHistory") || "[]";
       let history = [];
       try { history = JSON.parse(historyRaw); } catch (e) { history = []; }
@@ -95,11 +98,9 @@ figma.ui.onmessage = (msg) => {
       if (history.length > 10) history = history.slice(0, 10);
       node.setPluginData("devHandoffHistory", JSON.stringify(history));
 
-      // relaunch 버튼 등록 — 마킹된 노드에서 바로 플러그인 열기
       node.setRelaunchData({ open: `${msg.status} — ${msg.designer}` });
     }
 
-    // 마킹 후 UI에 갱신된 정보 전달
     sendSelectionToUI();
 
     const statusLabel = {
@@ -112,8 +113,21 @@ figma.ui.onmessage = (msg) => {
     figma.notify(`${targetNodes.length}개 프레임 → "${statusLabel}" 마킹 완료`);
   }
 
+  // Thread ts 저장 — Slack Web API 응답에서 받은 ts를 노드에 저장
+  if (msg.type === "save-thread-ts") {
+    const node = figma.getNodeById(msg.nodeId);
+    if (node) {
+      let threadMap = {};
+      try {
+        const raw = node.getPluginData("devHandoffThreads");
+        if (raw) threadMap = JSON.parse(raw);
+      } catch (e) {}
+      threadMap[msg.channelId] = msg.ts;
+      node.setPluginData("devHandoffThreads", JSON.stringify(threadMap));
+    }
+  }
+
   if (msg.type === "get-history") {
-    // 특정 노드의 핸드오프 히스토리 조회
     const node = figma.getNodeById(msg.nodeId);
     if (node) {
       const historyRaw = node.getPluginData("devHandoffHistory") || "[]";
@@ -124,13 +138,13 @@ figma.ui.onmessage = (msg) => {
   }
 
   if (msg.type === "clear-status") {
-    // 특정 노드의 핸드오프 상태 초기화
     const node = figma.getNodeById(msg.nodeId);
     if (node) {
       node.setPluginData("devHandoffStatus", "");
       node.setPluginData("devHandoffDesigner", "");
       node.setPluginData("devHandoffTimestamp", "");
       node.setPluginData("devHandoffMemo", "");
+      node.setPluginData("devHandoffThreads", "");
       node.setRelaunchData({});
       sendSelectionToUI();
       figma.notify(`"${node.name}" 핸드오프 상태가 초기화되었습니다.`);

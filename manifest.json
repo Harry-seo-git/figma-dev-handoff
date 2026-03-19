@@ -6,7 +6,10 @@
   "ui": "ui.html",
   "editorType": ["figma"],
   "networkAccess": {
-    "allowedDomains": ["https://hooks.slack.com"]
+    "allowedDomains": [
+      "https://hooks.slack.com",
+      "https://slack.com"
+    ]
   },
   "relaunchButtons": [
     {
