@@ -462,8 +462,8 @@ async function sendToSlack() {
 
       const response = await fetch(channel.url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "payload=" + encodeURIComponent(JSON.stringify(payload))
       });
 
       if (response.ok) {
