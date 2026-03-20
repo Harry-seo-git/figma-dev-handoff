@@ -74,10 +74,25 @@ if (figma.command === "open") {
 }
 
 // UI에서 오는 메시지 처리
-figma.ui.onmessage = (msg) => {
-  // UI 로드 완료 시 현재 선택 정보 전달
+figma.ui.onmessage = async (msg) => {
+  // UI 로드 완료 시 저장된 데이터 + 현재 선택 정보 전달
   if (msg.type === "ui-ready") {
+    const channels = await figma.clientStorage.getAsync("slack_channels") || [];
+    const designer = await figma.clientStorage.getAsync("designer_name") || "";
+    figma.ui.postMessage({ type: "init-data", channels, designer });
     sendSelectionToUI();
+    return;
+  }
+
+  // 채널 저장
+  if (msg.type === "save-channels") {
+    await figma.clientStorage.setAsync("slack_channels", msg.channels);
+    return;
+  }
+
+  // 디자이너 이름 저장
+  if (msg.type === "save-designer") {
+    await figma.clientStorage.setAsync("designer_name", msg.name);
     return;
   }
 

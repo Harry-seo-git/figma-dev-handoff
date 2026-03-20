@@ -189,12 +189,15 @@ const PRIORITY_MAP = {
 };
 
 // ==================== Multi-Channel Management ====================
+let _channels = [];
+
 function getChannels() {
-  try { return JSON.parse(localStorage.getItem("slack_channels") || "[]"); } catch(e) { return []; }
+  return _channels;
 }
 
 function saveChannels(channels) {
-  localStorage.setItem("slack_channels", JSON.stringify(channels));
+  _channels = channels;
+  parent.postMessage({ pluginMessage: { type: "save-channels", channels } }, "*");
 }
 
 function addChannel() {
@@ -267,16 +270,6 @@ function getEnabledChannels() {
   return getChannels().filter(c => c.enabled !== false);
 }
 
-// Migrate old single webhook to multi-channel
-function migrateOldWebhook() {
-  const oldUrl = localStorage.getItem("slack_webhook_url");
-  if (oldUrl && getChannels().length === 0) {
-    saveChannels([{ name: "#general", url: oldUrl, enabled: true }]);
-    localStorage.removeItem("slack_webhook_url");
-  }
-}
-migrateOldWebhook();
-
 // ==================== Settings ====================
 function toggleSettings() {
   document.getElementById("settingsPanel").classList.toggle("open");
@@ -294,16 +287,13 @@ function updateWebhookIndicator() {
   }
 }
 
-// Init
+// Init — 실제 데이터는 code.js에서 init-data 메시지로 받아서 렌더링
 renderChannelSettings();
 renderSendChannels();
 updateWebhookIndicator();
 
-const savedDesigner = localStorage.getItem("designer_name") || "";
-if (savedDesigner) document.getElementById("designer").value = savedDesigner;
-
 function saveDesignerName() {
-  localStorage.setItem("designer_name", document.getElementById("designer").value.trim());
+  parent.postMessage({ pluginMessage: { type: "save-designer", name: document.getElementById("designer").value.trim() } }, "*");
 }
 
 // ==================== Status Preview ====================
@@ -543,6 +533,14 @@ function clearStatus(nodeId) {
 window.onmessage = (event) => {
   const msg = event.data.pluginMessage;
   if (!msg) return;
+  if (msg.type === "init-data") {
+    _channels = msg.channels || [];
+    if (msg.designer) document.getElementById("designer").value = msg.designer;
+    renderChannelSettings();
+    renderSendChannels();
+    updateWebhookIndicator();
+    return;
+  }
   if (msg.type === "selection-update") {
     selectedFrames = msg.frames;
     currentPageName = msg.pageName;
