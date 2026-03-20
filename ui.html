@@ -341,6 +341,7 @@ function renderFrames(frames) {
       </div>
       <div class="frame-meta">${f.width}&times;${f.height}</div>
       <div class="frame-actions">
+        ${f.figmaLink ? `<button class="btn-ghost" onclick="copyFigmaLink('${escapeHtml(f.figmaLink)}')" title="Figma 링크 복사">&#128279;</button>` : ""}
         ${f.prevStatus ? `<button class="btn-ghost" onclick="showHistory('${f.id}')" title="히스토리">&#128337;</button>` : ""}
         ${f.prevStatus ? `<button class="btn-ghost btn-danger" onclick="clearStatus('${f.id}')" title="상태 초기화">&#10005;</button>` : ""}
       </div>
@@ -566,6 +567,22 @@ document.addEventListener("keydown", (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); const b = document.getElementById("sendBtn"); if (!b.disabled) confirmSend(); }
   if (e.key === "Escape") { closeConfirm(); closeHistoryDirect(); }
 });
+
+// ==================== Figma Link ====================
+function copyFigmaLink(url) {
+  navigator.clipboard.writeText(url).then(() => {
+    showToast("Figma 링크가 클립보드에 복사되었습니다.", "success");
+  }).catch(() => {
+    // fallback
+    const ta = document.createElement("textarea");
+    ta.value = url;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    showToast("Figma 링크가 클립보드에 복사되었습니다.", "success");
+  });
+}
 
 // ==================== Helpers ====================
 function escapeHtml(str) { const d = document.createElement("div"); d.textContent = str; return d.innerHTML; }
