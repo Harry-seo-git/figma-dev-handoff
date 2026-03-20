@@ -75,6 +75,12 @@ if (figma.command === "open") {
 
 // UI에서 오는 메시지 처리
 figma.ui.onmessage = (msg) => {
+  // UI 로드 완료 시 현재 선택 정보 전달
+  if (msg.type === "ui-ready") {
+    sendSelectionToUI();
+    return;
+  }
+
   if (msg.type === "mark-dev-ready") {
     const selection = figma.currentPage.selection;
     const targetNodes = selection.filter(node => HANDOFF_TYPES.includes(node.type));

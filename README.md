@@ -2,14 +2,27 @@
 
 선택한 프레임을 **Dev Ready**로 마킹하고, **Slack**에 자동 알림을 보내는 Figma 플러그인입니다.
 
+## 다운로드
+
+👉 [**dev-handoff-notifier-plugin.zip**](./dev-handoff-notifier-plugin.zip) — 클릭하여 다운로드 후 압축 해제
+
+> GitHub에서 보고 계신다면, 파일을 클릭한 뒤 **Download raw file** 버튼을 눌러주세요.
+
+### 설치 방법
+1. 위 zip 파일 다운로드 후 원하는 폴더에 압축 해제
+2. Figma 데스크톱 앱 → **Plugins** → **Development** → **Import plugin from manifest...**
+3. 압축 해제한 폴더의 `manifest.json` 선택
+4. 플러그인 목록에서 **Dev Handoff Notifier** 실행!
+
 ## 파일 구조
 
 ```
 figma-dev-handoff/
-├── manifest.json    # Figma 플러그인 설정 파일
-├── code.js          # 플러그인 메인 로직 (Sandbox)
-├── ui.html          # 플러그인 UI (Slack 발송 포함)
-└── README.md        # 이 문서
+├── manifest.json                      # Figma 플러그인 설정 파일
+├── code.js                            # 플러그인 메인 로직 (Sandbox)
+├── ui.html                            # 플러그인 UI (Slack 발송 포함)
+├── dev-handoff-notifier-plugin.zip    # 플러그인 배포용 압축 파일
+└── README.md                          # 이 문서
 ```
 
 ## 빠른 시작

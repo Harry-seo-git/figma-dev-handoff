@@ -90,7 +90,7 @@ button{display:inline-flex;align-items:center;justify-content:center;gap:6px;pad
   <div style="display:flex;gap:4px;margin-bottom:6px;">
     <input type="text" id="newChannelName" placeholder="#channel-name" style="flex:1" />
     <input type="url" id="newChannelUrl" placeholder="https://hooks.slack.com/services/..." style="flex:2" />
-    <button class="btn-secondary btn-small" onclick="addChannel()" style="flex-shrink:0;width:auto;">추가</button>
+    <button type="button" class="btn-secondary btn-small" onclick="addChannel()" style="flex-shrink:0;width:auto;">추가</button>
   </div>
   <div style="font-size:10px;color:var(--gray-400);">각 채널에 Incoming Webhook URL을 등록하세요. 여러 채널에 동시 전송 가능합니다.</div>
 </div>
@@ -566,6 +566,9 @@ function showToast(message, type) {
   t.className = "toast " + type;
   requestAnimationFrame(() => { t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 3000); });
 }
+
+// UI가 로드 완료되면 code.js에 알려서 현재 선택 정보를 받아옴
+parent.postMessage({ pluginMessage: { type: "ui-ready" } }, "*");
 </script>
 </body>
 </html>
