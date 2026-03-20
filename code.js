@@ -105,6 +105,7 @@ figma.ui.onmessage = async (msg) => {
       node.setPluginData("devHandoffDesigner", msg.designer);
       node.setPluginData("devHandoffTimestamp", new Date().toISOString());
       node.setPluginData("devHandoffMemo", msg.memo || "");
+      node.setPluginData("devHandoffJiraUrl", msg.jiraUrl || "");
 
       // 히스토리 (최근 10건)
       const historyRaw = node.getPluginData("devHandoffHistory") || "[]";
@@ -114,6 +115,7 @@ figma.ui.onmessage = async (msg) => {
         status: msg.status,
         designer: msg.designer,
         memo: msg.memo || "",
+        jiraUrl: msg.jiraUrl || "",
         timestamp: new Date().toISOString()
       });
       if (history.length > 10) history = history.slice(0, 10);
@@ -165,6 +167,7 @@ figma.ui.onmessage = async (msg) => {
       node.setPluginData("devHandoffDesigner", "");
       node.setPluginData("devHandoffTimestamp", "");
       node.setPluginData("devHandoffMemo", "");
+      node.setPluginData("devHandoffJiraUrl", "");
       node.setPluginData("devHandoffThreads", "");
       node.setRelaunchData({});
       sendSelectionToUI();
