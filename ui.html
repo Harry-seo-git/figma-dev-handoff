@@ -93,6 +93,10 @@ button{display:inline-flex;align-items:center;justify-content:center;gap:6px;pad
     <button type="button" class="btn-secondary btn-small" onclick="addChannel()" style="flex-shrink:0;width:auto;">추가</button>
   </div>
   <div style="font-size:10px;color:var(--gray-400);">각 채널에 Incoming Webhook URL을 등록하세요. 여러 채널에 동시 전송 가능합니다.</div>
+  <hr class="divider" />
+  <label style="margin-top:0;">Figma 파일 URL</label>
+  <input type="url" id="figmaFileUrl" placeholder="https://www.figma.com/design/ABC123/파일이름" oninput="saveFigmaFileUrl()" />
+  <div style="font-size:10px;color:var(--gray-400);margin-top:4px;">브라우저에서 Figma 파일 URL을 복사해 붙여넣으세요. 슬랙 메시지에 프레임별 링크가 포함됩니다.</div>
 </div>
 
 <!-- Frame Selection -->
@@ -299,6 +303,23 @@ function saveDesignerName() {
   parent.postMessage({ pluginMessage: { type: "save-designer", name: document.getElementById("designer").value.trim() } }, "*");
 }
 
+function saveFigmaFileUrl() {
+  parent.postMessage({ pluginMessage: { type: "save-figma-url", url: document.getElementById("figmaFileUrl").value.trim() } }, "*");
+}
+
+function getFigmaLinkForFrame(frame) {
+  // 1) code.js에서 받은 figmaLink (figma.fileKey 기반)
+  if (frame.figmaLink) return frame.figmaLink;
+  // 2) 수동 입력한 Figma 파일 URL 기반
+  const baseUrl = document.getElementById("figmaFileUrl").value.trim();
+  if (baseUrl && frame.id) {
+    // URL에서 쿼리/해시 제거 후 node-id 추가
+    const cleanUrl = baseUrl.split("?")[0].split("#")[0];
+    return `${cleanUrl}?node-id=${encodeURIComponent(frame.id)}`;
+  }
+  return null;
+}
+
 // ==================== Status Preview ====================
 function updateStatusPreview() {
   const status = document.getElementById("status").value;
@@ -341,7 +362,7 @@ function renderFrames(frames) {
       </div>
       <div class="frame-meta">${f.width}&times;${f.height}</div>
       <div class="frame-actions">
-        ${f.figmaLink ? `<button class="btn-ghost" onclick="copyFigmaLink('${escapeHtml(f.figmaLink)}')" title="Figma 링크 복사">&#128279;</button>` : ""}
+        ${(function(){ const fl = getFigmaLinkForFrame(f); return fl ? `<button class="btn-ghost" onclick="copyFigmaLink('${escapeHtml(fl)}')" title="Figma 링크 복사">&#128279;</button>` : ""; })()}
         ${f.prevStatus ? `<button class="btn-ghost" onclick="showHistory('${f.id}')" title="히스토리">&#128337;</button>` : ""}
         ${f.prevStatus ? `<button class="btn-ghost btn-danger" onclick="clearStatus('${f.id}')" title="상태 초기화">&#10005;</button>` : ""}
       </div>
@@ -412,7 +433,8 @@ async function sendToSlack() {
   sendBtn.innerHTML = '<span class="sending">&#128232; 전송 중...</span>';
 
   const frameLines = selectedFrames.map(f => {
-    const link = f.figmaLink ? ` — <${f.figmaLink}|Figma에서 열기>` : "";
+    const fLink = getFigmaLinkForFrame(f);
+    const link = fLink ? ` — <${fLink}|Figma에서 열기>` : "";
     return `• *${f.name}* (${f.type}, ${f.width}×${f.height})${link}`;
   }).join("\n");
 
@@ -438,8 +460,8 @@ async function sendToSlack() {
 
   // Figma 링크 섹션
   const figmaLinks = selectedFrames
-    .filter(f => f.figmaLink)
-    .map(f => `<${f.figmaLink}|${f.name}>`)
+    .map(f => { const l = getFigmaLinkForFrame(f); return l ? `<${l}|${f.name}>` : null; })
+    .filter(Boolean)
     .join("  ·  ");
   if (figmaLinks) {
     blocks.push({ type:"section", text:{ type:"mrkdwn", text:`*🔗 Figma 링크:*\n${figmaLinks}` } });
@@ -456,7 +478,7 @@ async function sendToSlack() {
   blocks.push({ type:"context", elements:[{ type:"mrkdwn", text:`🕐 ${timestamp} · Dev Handoff Notifier` }] });
 
   // Thread follow-up blocks (simplified for replies)
-  const firstFigmaLink = selectedFrames.find(f => f.figmaLink)?.figmaLink;
+  const firstFigmaLink = selectedFrames.map(f => getFigmaLinkForFrame(f)).find(Boolean);
   const threadBlocks = [
     { type:"section", text:{ type:"mrkdwn", text:`🔄 *상태 업데이트: ${statusText}*\n담당: ${designer}${firstFigmaLink ? "\nFigma: <" + firstFigmaLink + "|Figma에서 열기>" : ""}${jiraUrl ? "\nJira: <" + jiraUrl + "|티켓 보기>" : ""}${memo ? "\n메모: " + memo : ""}` } },
     { type:"context", elements:[{ type:"mrkdwn", text:`🕐 ${timestamp}` }] }
@@ -558,6 +580,7 @@ window.onmessage = (event) => {
   if (msg.type === "init-data") {
     _channels = msg.channels || [];
     if (msg.designer) document.getElementById("designer").value = msg.designer;
+    if (msg.figmaFileUrl) document.getElementById("figmaFileUrl").value = msg.figmaFileUrl;
     renderChannelSettings();
     renderSendChannels();
     updateWebhookIndicator();
