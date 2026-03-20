@@ -79,7 +79,8 @@ figma.ui.onmessage = async (msg) => {
   if (msg.type === "ui-ready") {
     const channels = await figma.clientStorage.getAsync("slack_channels") || [];
     const designer = await figma.clientStorage.getAsync("designer_name") || "";
-    figma.ui.postMessage({ type: "init-data", channels, designer });
+    const figmaFileUrl = await figma.clientStorage.getAsync("figma_file_url") || "";
+    figma.ui.postMessage({ type: "init-data", channels, designer, figmaFileUrl });
     sendSelectionToUI();
     return;
   }
@@ -93,6 +94,12 @@ figma.ui.onmessage = async (msg) => {
   // 디자이너 이름 저장
   if (msg.type === "save-designer") {
     await figma.clientStorage.setAsync("designer_name", msg.name);
+    return;
+  }
+
+  // Figma 파일 URL 저장
+  if (msg.type === "save-figma-url") {
+    await figma.clientStorage.setAsync("figma_file_url", msg.url);
     return;
   }
 
