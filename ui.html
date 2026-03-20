@@ -436,6 +436,15 @@ async function sendToSlack() {
 
   blocks.push({ type:"section", text:{ type:"mrkdwn", text:`*프레임 목록:*\n${frameLines}` } });
 
+  // Figma 링크 섹션
+  const figmaLinks = selectedFrames
+    .filter(f => f.figmaLink)
+    .map(f => `<${f.figmaLink}|${f.name}>`)
+    .join("  ·  ");
+  if (figmaLinks) {
+    blocks.push({ type:"section", text:{ type:"mrkdwn", text:`*🔗 Figma 링크:*\n${figmaLinks}` } });
+  }
+
   if (jiraUrl) {
     blocks.push({ type:"section", text:{ type:"mrkdwn", text:`*🎫 Jira 티켓:*\n<${jiraUrl}|${jiraUrl}>` } });
   }
@@ -447,8 +456,9 @@ async function sendToSlack() {
   blocks.push({ type:"context", elements:[{ type:"mrkdwn", text:`🕐 ${timestamp} · Dev Handoff Notifier` }] });
 
   // Thread follow-up blocks (simplified for replies)
+  const firstFigmaLink = selectedFrames.find(f => f.figmaLink)?.figmaLink;
   const threadBlocks = [
-    { type:"section", text:{ type:"mrkdwn", text:`🔄 *상태 업데이트: ${statusText}*\n담당: ${designer}${jiraUrl ? "\nJira: <" + jiraUrl + "|티켓 보기>" : ""}${memo ? "\n메모: " + memo : ""}` } },
+    { type:"section", text:{ type:"mrkdwn", text:`🔄 *상태 업데이트: ${statusText}*\n담당: ${designer}${firstFigmaLink ? "\nFigma: <" + firstFigmaLink + "|Figma에서 열기>" : ""}${jiraUrl ? "\nJira: <" + jiraUrl + "|티켓 보기>" : ""}${memo ? "\n메모: " + memo : ""}` } },
     { type:"context", elements:[{ type:"mrkdwn", text:`🕐 ${timestamp}` }] }
   ];
 
