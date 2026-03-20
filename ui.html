@@ -433,9 +433,7 @@ async function sendToSlack() {
   sendBtn.innerHTML = '<span class="sending">&#128232; 전송 중...</span>';
 
   const frameLines = selectedFrames.map(f => {
-    const fLink = getFigmaLinkForFrame(f);
-    const link = fLink ? ` — <${fLink}|Figma에서 열기>` : "";
-    return `• *${f.name}* (${f.type}, ${f.width}×${f.height})${link}`;
+    return `• *${f.name}* (${f.type}, ${f.width}×${f.height})`;
   }).join("\n");
 
   const now = new Date();
