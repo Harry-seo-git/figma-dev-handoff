@@ -65,4 +65,6 @@ figma-dev-handoff/
 
 ## 라이선스
 
-MIT
+MIT License — Copyright (c) 2025 Harry ([hello@hey-hu.com](mailto:hello@hey-hu.com))
+
+자세한 내용은 [LICENSE](./LICENSE) 파일을 참고하세요.
